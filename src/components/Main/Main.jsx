@@ -1,63 +1,39 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Popup from "./componentes/Popup/Popup";
 import NewCard from "./form/NewCard/NewCard";
 import avatar from "../../images/avatar.jpg";
 import Card from "../Card/Card";
 import ImagePopup from "../ImagePopup/ImagePopup";
-import RemoveCard from "../RemoveCard/RemoveCard";
+import EditProfile from "../EditProfile/EditProfile";
+import EditAvatar from "../EditAvatar/EditAvatar";
+import CurrentUserContext from "../../contexts/CurrentUserContext";
 
-const cards = [
-  {
-    isLiked: false,
-    _id: "1",
-    name: "Yosemite Valley",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_yosemite.jpg",
-  },
-  {
-    isLiked: false,
-    _id: "2",
-    name: "Lake Louise",
-    link: "https://practicum-content.s3.us-west-1.amazonaws.com/web-code/moved_lake-louise.jpg",
-  },
-];
+function Main({ cards, onCardLike, onCardDelete, onAddPlaceSubmit }) {
+  const { currentUser, handleUpdateAvatar } = useContext(CurrentUserContext);
 
-function Main() {
   const [popup, setPopup] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
 
   const newCardPopup = {
     title: "Nuevo lugar",
-    children: <NewCard />,
+    children: (
+      <NewCard onAddPlaceSubmit={onAddPlaceSubmit} onClose={handleClosePopup} />
+    ),
   };
 
   const editProfilePopup = {
     title: "Editar perfil",
-    children: (
-      <form className="popup__form">
-        <input className="popup__input" placeholder="Nombre" type="text" />
-        <input className="popup__input" placeholder="Descripción" type="text" />
-        <button className="button popup__button" type="submit">
-          Guardar
-        </button>
-      </form>
-    ),
+    children: <EditProfile />,
   };
 
   const editAvatarPopup = {
     title: "Cambiar avatar",
     children: (
-      <form className="popup__form">
-        <input className="popup__input" placeholder="Image link" type="url" />
-        <button className="button popup__button" type="submit">
-          Guardar
-        </button>
-      </form>
+      <EditAvatar
+        onUpdateAvatar={handleUpdateAvatar}
+        onClose={handleClosePopup}
+      />
     ),
-  };
-
-  const removeCardPopup = {
-    title: "Eliminar Card",
-    children: <RemoveCard />,
   };
 
   function handleOpenPopup(popupData) {
@@ -72,35 +48,49 @@ function Main() {
     <main className="content">
       <section className="profile page__section">
         <div className="profile__image-container">
-          <img className="profile__image" src={avatar} alt="Avatar" />
+          <img
+            className="profile__image"
+            src={currentUser.avatar || avatar}
+            alt="Avatar"
+          />
           <button
             className="profile__avatar-edit-button"
             type="button"
             onClick={() => handleOpenPopup(editAvatarPopup)}
-          ></button>
+          />
         </div>
 
         <div className="profile__info">
-          <h1 className="profile__title">Jacques Cousteau</h1>
+          <h1 className="profile__title">
+            {currentUser.name || "Cargando..."}
+          </h1>
+
           <button
             className="profile__edit-button"
             type="button"
             onClick={() => handleOpenPopup(editProfilePopup)}
-          ></button>
-          <p className="profile__description">Explorador</p>
+          />
+
+          <p className="profile__description">{currentUser.about || ""}</p>
         </div>
 
         <button
           className="profile__add-button"
           type="button"
           onClick={() => handleOpenPopup(newCardPopup)}
-        ></button>
+        />
       </section>
 
       <section className="cards page__section">
         <ul className="cards__list">
           {cards.map((card) => (
-            <Card key={card._id} card={card} onCardClick={setSelectedCard} />
+            <Card
+              key={card._id}
+              card={card}
+              onCardClick={setSelectedCard}
+              onCardLike={onCardLike}
+              onCardDelete={onCardDelete}
+            />
           ))}
         </ul>
       </section>
@@ -111,10 +101,7 @@ function Main() {
         </Popup>
       )}
 
-      <ImagePopup
-        card={selectedCard}
-        onClose={() => setSelectedCard(null)}
-      ></ImagePopup>
+      <ImagePopup card={selectedCard} onClose={() => setSelectedCard(null)} />
     </main>
   );
 }

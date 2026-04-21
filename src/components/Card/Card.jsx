@@ -1,5 +1,31 @@
-export default function Card(props) {
-  const { name, link, isLiked } = props.card;
+import { useContext } from "react";
+import CurrentUserContext from "../../contexts/CurrentUserContext";
+
+export default function Card({ card, onCardClick, onCardLike, onCardDelete }) {
+  const { currentUser } = useContext(CurrentUserContext);
+
+  const { name, link, likes = [], owner = {} } = card;
+
+  const isLiked = card.isLiked;
+
+  const cardLikeButtonClassName = `card__like-button ${
+    isLiked ? "card__like-button_is-active" : ""
+  }`;
+
+  const ownerId = typeof owner === "string" ? owner : owner?._id;
+  const isOwn = ownerId === currentUser?._id;
+
+  const cardDeleteButtonClassName = `card__delete-button ${
+    isOwn ? "" : "card__delete-button_hidden"
+  }`;
+
+  function handleLikeClick() {
+    onCardLike(card);
+  }
+
+  function handleDeleteCard() {
+    onCardDelete(card);
+  }
 
   return (
     <li className="card">
@@ -7,12 +33,12 @@ export default function Card(props) {
         className="card__image"
         src={link}
         alt={name}
-        onClick={() => props.onCardClick(props.card)}
+        onClick={() => onCardClick(card)}
       />
 
       <button
         aria-label="Delete card"
-        className="card__delete-button"
+        className={cardDeleteButtonClassName}
         type="button"
       />
 
@@ -22,7 +48,15 @@ export default function Card(props) {
         <button
           aria-label="Like card"
           type="button"
-          className="card__like-button"
+          className={cardLikeButtonClassName}
+          onClick={handleLikeClick}
+        />
+
+        <button
+          aria-label="Delete card"
+          type="button"
+          className={cardDeleteButtonClassName}
+          onClick={handleDeleteCard}
         />
       </div>
     </li>
