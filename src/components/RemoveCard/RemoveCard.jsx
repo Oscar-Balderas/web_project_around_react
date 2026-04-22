@@ -1,4 +1,4 @@
-export default function () {
+export default function Card() {
   return (
     <form className="popup__form">
       <p>¿Estás seguro?</p>
